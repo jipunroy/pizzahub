@@ -12,8 +12,9 @@ import {
 
 const router = Router();
 
-// Only authenticated customers can access these routes
-router.use(requireAuth, allowRoles("customer"));
+// Require authentication and customer role
+router.use(requireAuth);
+router.use(allowRoles("customer"));
 
 // Get all orders of the logged-in customer
 router.get("/", getCustomerOrdersController);
