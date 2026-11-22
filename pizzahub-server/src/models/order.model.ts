@@ -1,3 +1,4 @@
+
 import mongoose, {
   Schema,
   type InferSchemaType,
@@ -81,7 +82,14 @@ const orderSchema = new Schema(
       index: true,
     },
 
+    // Customer cancellation reason
     cancellationReason: {
+      type: String,
+      default: null,
+    },
+
+    // Vendor rejection reason
+    rejectionReason: {
       type: String,
       default: null,
     },

@@ -6,13 +6,16 @@ import helmet from "helmet";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth.js";
 
-import orderRoutes from "./routes/order.routes.js";
+// Middleware
 import { requireAuth } from "./middleware/auth.middleware.js";
 import { allowRoles } from "./middleware/role.middleware.js";
 
+// Routes
 import publicMenuRoutes from "./routes/public-menu.routes.js";
 import menuRoutes from "./routes/menu.routes.js";
 import adminMenuRoutes from "./routes/admin-menu.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import vendorOrderRoutes from "./routes/vendor-order.routes.js";
 
 const app = express();
 
@@ -27,13 +30,13 @@ app.use(
   })
 );
 
-// Better Auth handler must come before express.json()
+// Better Auth handler
 app.all("/api/auth/{*any}", toNodeHandler(auth));
 
-// Parse JSON request bodies
+// Parse JSON
 app.use(express.json());
 
-// Public health-check route
+// Health check
 app.get("/", (_req, res) => {
   res.status(200).json({
     success: true,
@@ -41,10 +44,10 @@ app.get("/", (_req, res) => {
   });
 });
 
-// Public menu routes
+// Public menu
 app.use("/api/menu", publicMenuRoutes);
 
-// Protected route: any authenticated user
+// Protected route
 app.get("/api/protected", requireAuth, (req, res) => {
   res.status(200).json({
     success: true,
@@ -58,7 +61,7 @@ app.get("/api/protected", requireAuth, (req, res) => {
   });
 });
 
-// Vendor-only test route
+// Vendor test
 app.get(
   "/api/vendor-test",
   requireAuth,
@@ -71,10 +74,13 @@ app.get(
   }
 );
 
-// Vendor menu management routes
+// Vendor menu routes
 app.use("/api/vendor/menu", menuRoutes);
 
-// Admin-only test route
+// Vendor order routes
+app.use("/api/vendor/orders", vendorOrderRoutes);
+
+// Admin test
 app.get(
   "/api/admin-test",
   requireAuth,
@@ -87,11 +93,13 @@ app.get(
   }
 );
 
-// Admin menu approval routes
+// Admin menu routes
 app.use("/api/admin/menu", adminMenuRoutes);
 
+// Customer order creation
 app.use("/api/orders", orderRoutes);
-// Global error handler (must be last)
+
+// Global error handler
 app.use(
   (
     error: Error & { statusCode?: number },
