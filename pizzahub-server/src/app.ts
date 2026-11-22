@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 
+import customerOrderRoutes from "./routes/customer-order.routes.js";
 import { toNodeHandler } from "better-auth/node";
 import { auth } from "./config/auth.js";
 
@@ -95,6 +96,9 @@ app.get(
 
 // Admin menu routes
 app.use("/api/admin/menu", adminMenuRoutes);
+
+// Customer order routes
+app.use("/api/customer/orders", customerOrderRoutes);
 
 // Customer order creation
 app.use("/api/orders", orderRoutes);
