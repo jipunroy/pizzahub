@@ -1,0 +1,22 @@
+import mongoose from "mongoose";
+
+const connectDatabase = async (): Promise<void> => {
+  try {
+    const mongoUri = process.env.MONGODB_URI;
+
+    if (!mongoUri) {
+      throw new Error("MONGODB_URI is missing in environment variables");
+    }
+
+    await mongoose.connect(mongoUri, {
+      dbName: process.env.DB_NAME || "pizzahub",
+    });
+
+    console.log("MongoDB connected successfully!");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    process.exit(1);
+  }
+};
+
+export default connectDatabase;
