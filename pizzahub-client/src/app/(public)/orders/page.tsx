@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export default function OrdersPage() {
   const { data, isLoading, isError, refetch } = useCustomerOrders();
 
-  const orders = data?.data ?? [];
+const orders = Array.isArray(data?.orders) ? data.orders : [];
 
   if (isLoading) {
     return (

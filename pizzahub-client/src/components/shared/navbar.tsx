@@ -3,14 +3,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Menu,
   ShoppingBag,
   ShoppingCart,
   X,
+  LogOut,
+  LayoutDashboard,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { useCart } from "@/context/cart-context";
+import { authClient } from "@/lib/auth-client";
 
 const navLinks = [
   { name: "Home", href: "/" },
@@ -21,12 +26,39 @@ const navLinks = [
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+
   const { cartCount } = useCart();
+  const router = useRouter();
+
+  const { data: session, isPending } = authClient.useSession();
+  const isLoggedIn = Boolean(session?.user);
+
+  const handleSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+
+      const result = await authClient.signOut();
+
+      if (result.error) {
+        toast.error(result.error.message || "Unable to sign out.");
+        return;
+      }
+
+      setIsOpen(false);
+      toast.success("Signed out successfully!");
+      router.replace("/login");
+      router.refresh();
+    } catch {
+      toast.error("Something went wrong while signing out.");
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-orange-100 bg-[#FFF9F2]/95 backdrop-blur-md">
       <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 lg:px-8">
-
         {/* Logo */}
         <Link href="/" className="text-2xl font-extrabold tracking-tight">
           <span className="text-[#D9362B]">Pizza</span>
@@ -48,7 +80,6 @@ export default function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-3 md:flex">
-
           {/* Cart */}
           <Link
             href="/cart"
@@ -64,12 +95,36 @@ export default function Navbar() {
             )}
           </Link>
 
-          <Link
-            href="/login"
-            className="rounded-full px-5 py-2.5 text-sm font-semibold text-[#242424] transition hover:bg-orange-100"
-          >
-            Login
-          </Link>
+          {!isPending && (
+            isLoggedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-semibold text-[#242424] transition hover:bg-orange-100"
+                >
+                  <LayoutDashboard size={17} />
+                  Dashboard
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="flex items-center gap-2 rounded-full border border-[#D9362B] px-5 py-2.5 text-sm font-semibold text-[#D9362B] transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <LogOut size={17} />
+                  {isSigningOut ? "Signing Out..." : "Sign Out"}
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-full px-5 py-2.5 text-sm font-semibold text-[#242424] transition hover:bg-orange-100"
+              >
+                Login
+              </Link>
+            )
+          )}
 
           <Link
             href="/menu"
@@ -82,7 +137,6 @@ export default function Navbar() {
 
         {/* Mobile Actions */}
         <div className="flex items-center gap-2 md:hidden">
-
           <Link
             href="/cart"
             aria-label={`Shopping cart, ${cartCount} items`}
@@ -132,13 +186,38 @@ export default function Navbar() {
               Shopping Cart ({cartCount})
             </Link>
 
-            <Link
-              href="/login"
-              onClick={() => setIsOpen(false)}
-              className="font-semibold text-gray-700"
-            >
-              Login
-            </Link>
+            {!isPending && (
+              isLoggedIn ? (
+                <>
+                  <Link
+                    href="/dashboard"
+                    onClick={() => setIsOpen(false)}
+                    className="flex items-center gap-2 font-semibold text-gray-700"
+                  >
+                    <LayoutDashboard size={18} />
+                    Dashboard
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={handleSignOut}
+                    disabled={isSigningOut}
+                    className="flex items-center gap-2 text-left font-semibold text-[#D9362B] disabled:opacity-50"
+                  >
+                    <LogOut size={18} />
+                    {isSigningOut ? "Signing Out..." : "Sign Out"}
+                  </button>
+                </>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="font-semibold text-gray-700"
+                >
+                  Login
+                </Link>
+              )
+            )}
 
             <Link
               href="/menu"
