@@ -15,6 +15,13 @@ export const allowRoles = (...allowedRoles: UserRole[]) => {
       return;
     }
 
+    // Temporary debugging
+    console.log("AUTH ROLE DEBUG:", {
+      userId: req.user.id,
+      userRole: req.user.role,
+      allowedRoles,
+    });
+
     if (!allowedRoles.includes(req.user.role as UserRole)) {
       res.status(403).json({
         success: false,

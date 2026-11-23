@@ -1,6 +1,7 @@
 "use client";
 
 import QueryProvider from "./query-provider";
+import { CartProvider } from "@/context/cart-context";
 import { Toaster } from "@/components/ui/sonner";
 
 interface ProvidersProps {
@@ -10,8 +11,10 @@ interface ProvidersProps {
 export default function Providers({ children }: ProvidersProps) {
   return (
     <QueryProvider>
-      {children}
-      <Toaster position="top-right" richColors />
+      <CartProvider>
+        {children}
+        <Toaster position="top-right" richColors />
+      </CartProvider>
     </QueryProvider>
   );
 }

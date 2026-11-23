@@ -2,14 +2,61 @@
 import type { Request, Response, NextFunction } from "express";
 
 import {
+  createCustomerOrder,
   getCustomerOrders,
   getCustomerOrderById,
   cancelCustomerOrder,
 } from "../services/customer-order.service.js";
 
-import { cancelOrderSchema } from "../validators/order.validator.js";
+import {
+  createOrderSchema,
+  cancelOrderSchema,
+} from "../validators/order.validator.js";
 
-// 1. Get all orders of the logged-in customer
+// 1. Create a customer order
+export const createCustomerOrderController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const customerId = req.user?.id;
+
+    if (!customerId) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required.",
+      });
+      return;
+    }
+
+    const validation = createOrderSchema.safeParse(req.body);
+
+    if (!validation.success) {
+      res.status(400).json({
+        success: false,
+        message: "Validation failed.",
+        errors: validation.error.flatten(),
+      });
+      return;
+    }
+
+    const order = await createCustomerOrder(
+      customerId,
+      validation.data
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Order placed successfully.",
+      data: order,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// 2. Get all orders of the logged-in customer
 export const getCustomerOrdersController = async (
   req: Request,
   res: Response,
@@ -48,7 +95,7 @@ export const getCustomerOrdersController = async (
   }
 };
 
-// 2. Get a single order by ID
+// 3. Get a single order by ID
 export const getCustomerOrderByIdController = async (
   req: Request,
   res: Response,
@@ -92,7 +139,7 @@ export const getCustomerOrderByIdController = async (
   }
 };
 
-// 3. Cancel a pending order
+// 4. Cancel a pending order
 export const cancelCustomerOrderController = async (
   req: Request,
   res: Response,
